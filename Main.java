@@ -62,11 +62,22 @@ public class Main {
 
     private static boolean validateFields(String name, String lastName, String email) {
 
-        if (!email.matches("^[a-z0-9.]+@[a-z0-9]+\\.([a-z]+)?$")) {
+        if (!email.matches("^[a-z0-9.]+@[a-z0-9]+\\.([a-z0-9]+)?$")) {
             System.out.println("Incorrect email.");
             return false;
         }
 
+        if (!name.matches("^[a-zA-Z]+['-]{0,1}[a-zA-Z]+$")) {
+            System.out.println("Incorrect first name.");
+            return false;
+        }
+
+        List<String> lastNames = Arrays.asList(lastName.split("\\s+"));
+        boolean isValidLastName = lastNames.stream().allMatch(lName -> lName.matches("^[a-zA-Z]+((['-]{0,1}[a-zA-Z])|[a-zA-Z])+"));
+        if (!isValidLastName) {
+            System.out.println("Incorrect last name.");
+            return false;
+        }
         return true;
     }
 }
