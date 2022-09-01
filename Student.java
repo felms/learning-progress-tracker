@@ -1,8 +1,8 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 public class Student {
 
@@ -11,7 +11,7 @@ public class Student {
     private final String lastName;
     private final String email;
 
-    private final Map<Courses, Integer> reportCard;
+    private final Map<Courses, List<Integer>> activities;
 
     public Student(String name, String surname, String email) {
 
@@ -32,10 +32,10 @@ public class Student {
         this.email = email;
         this.id = this.hashCode();
 
-        this.reportCard = new HashMap<>();
+        this.activities = new HashMap<>();
 
         for (Courses course : Courses.values()) {
-            this.reportCard.put(course, 0);
+            this.activities.put(course, new ArrayList<>());
         }
 
     }
@@ -58,16 +58,30 @@ public class Student {
 
     public void updateRecord(List<Integer> points) {
 
-        this.reportCard.put(Courses.JAVA, this.reportCard.get(Courses.JAVA) + points.get(0));
-        this.reportCard.put(Courses.DSA, this.reportCard.get(Courses.DSA) + points.get(1));
-        this.reportCard.put(Courses.DATABASES, this.reportCard.get(Courses.DATABASES) + points.get(2));
-        this.reportCard.put(Courses.SPRING, this.reportCard.get(Courses.SPRING) + points.get(3));
+        if (points.get(0) > 0) {
+            this.activities.get(Courses.JAVA).add(points.get(0));
+        }
+
+        if (points.get(1) > 0) {
+            this.activities.get(Courses.DSA).add(points.get(1));
+        }
+
+        if (points.get(2) > 0) {
+            this.activities.get(Courses.DATABASES).add(points.get(2));
+        }
+
+        if (points.get(3) > 0) {
+            this.activities.get(Courses.SPRING).add(points.get(3));
+        }
     }
 
     public String listUser() {
         return String.format("%d points: Java=%d; DSA=%d; Databases=%d; Spring=%d",
-                this.id, this.reportCard.get(Courses.JAVA), this.reportCard.get(Courses.DSA),
-                this.reportCard.get(Courses.DATABASES), this.reportCard.get(Courses.SPRING));
+                this.id,
+                this.activities.get(Courses.JAVA).stream().mapToInt(Integer::intValue).sum(),
+                this.activities.get(Courses.DSA).stream().mapToInt(Integer::intValue).sum(),
+                this.activities.get(Courses.DATABASES).stream().mapToInt(Integer::intValue).sum(),
+                this.activities.get(Courses.SPRING).stream().mapToInt(Integer::intValue).sum());
     }
 
     @Override
