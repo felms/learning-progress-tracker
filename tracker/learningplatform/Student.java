@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 class Student {
 
@@ -56,6 +57,19 @@ class Student {
 
     public String getEmail() {
         return email;
+    }
+
+    public Map<Courses, List<Integer>> getActivities() {
+
+        return this.activities.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        coursesListEntry -> {
+                            ArrayList<Integer> newValue = new ArrayList<>();
+                            coursesListEntry.getValue().forEach(i -> newValue.add(i.intValue()));
+                            return newValue;
+                        }
+                        ));
     }
 
     public void updateRecord(List<Integer> points) {
