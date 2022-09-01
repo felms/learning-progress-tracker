@@ -1,4 +1,6 @@
-public enum Courses {
+package tracker.learningplatform;
+
+enum Courses {
 
     JAVA("Java"),
     DSA("Data Structures and Algorithms"),

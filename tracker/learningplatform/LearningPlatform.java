@@ -1,3 +1,5 @@
+package tracker.learningplatform;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,15 +9,61 @@ import java.util.stream.Collectors;
 
 public class LearningPlatform {
 
-    private static final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
 
-    private static final List<Student> students = new ArrayList<>();
+    private final List<Student> students;
 
+    private static LearningPlatform instance;
+
+    // private so I can hava a single instance
     private LearningPlatform() {
-      // No instances. Only static methods
+      students = new ArrayList<>();
+      scanner = new Scanner(System.in);
     }
 
-    public static void addStudent() {
+    public static LearningPlatform getInstance() {
+
+        if(instance == null) {
+            instance = new LearningPlatform();
+        }
+
+        return instance;
+    }
+
+
+    public void progressTracker() {
+
+        System.out.println("Learning Progress Tracker");
+        String input = scanner.nextLine();
+
+        while (!"exit".equals(input)) {
+
+            if (input.trim().equalsIgnoreCase("add students")) {
+                System.out.println("Enter student credentials or 'back' to return:");
+                addStudent();
+            } else if (input.trim().equalsIgnoreCase("add points")) {
+                System.out.println("Enter an id and points or 'back' to return:");
+                addPoints();
+            } else if (input.trim().equalsIgnoreCase("find")) {
+                System.out.println("Enter an id or 'back' to return:");
+                find();
+            } else if (input.trim().equalsIgnoreCase("list")){
+                listStudents();
+            } else if (input.trim().equalsIgnoreCase("back")) {
+                System.out.println("Enter 'exit' to exit the program.");
+            } else if ("".equals(input.trim())) {
+                System.out.println("No input.");
+            } else {
+                System.out.println("Error: unknown command!");
+            }
+
+            input = scanner.nextLine();
+        }
+
+        System.out.println("Bye!");
+    }
+
+    private void addStudent() {
 
         String input = scanner.nextLine();
         int addedStudents = 0;
@@ -48,7 +96,7 @@ public class LearningPlatform {
         System.out.println("Total " + addedStudents + " students have been added.");
     }
 
-    public static void listStudents() {
+    private void listStudents() {
 
         if (students.isEmpty()) {
             System.out.println("No students found.");
@@ -58,7 +106,7 @@ public class LearningPlatform {
         }
     }
 
-    public static void addPoints() {
+    private void addPoints() {
 
         String input = scanner.nextLine();
         while (!"back".equals(input.trim())) {
@@ -89,7 +137,7 @@ public class LearningPlatform {
 
     }
 
-    public static void find() {
+    private void find() {
 
         String input = scanner.nextLine();
         while (!"back".equals(input.trim())) {
@@ -110,7 +158,7 @@ public class LearningPlatform {
         }
     }
 
-    private static boolean validatePointsInput(String[] points) {
+    private boolean validatePointsInput(String[] points) {
 
         if (points.length != 5) {
             System.out.println("Incorrect points format.");
@@ -138,7 +186,7 @@ public class LearningPlatform {
         return true;
     }
 
-    private static boolean validateFields(String name, String lastName, String email) {
+    private boolean validateFields(String name, String lastName, String email) {
 
         if (!email.matches("^[a-z0-9.]+@[a-z0-9]+\\.([a-z0-9]+)?$")) {
             System.out.println("Incorrect email.");
