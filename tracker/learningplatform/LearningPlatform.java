@@ -2,6 +2,7 @@ package tracker.learningplatform;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,10 +17,13 @@ public class LearningPlatform {
 
     private static LearningPlatform instance;
 
+    private final Map<Student, List<Courses>> certificatesIssued;
+
     // private para ter uma unica instancia
     private LearningPlatform() {
-        students = new ArrayList<>();
-        scanner = new Scanner(System.in);
+        this.students = new ArrayList<>();
+        this.scanner = new Scanner(System.in);
+        this.certificatesIssued = new HashMap<>();
     }
 
     public static LearningPlatform getInstance() {
@@ -52,6 +56,8 @@ public class LearningPlatform {
                 listStudents();
             } else if (input.trim().equalsIgnoreCase("statistics")){
                 statistics();
+            } else if (input.trim().equalsIgnoreCase("notify")){
+                notifyStudents();
             } else if (input.trim().equalsIgnoreCase("back")) {
                 System.out.println("Enter 'exit' to exit the program.");
             } else if ("".equals(input.trim())) {
@@ -82,10 +88,12 @@ public class LearningPlatform {
 
                 if (validateFields(name, lastName, email)) {
 
-                    if (students.stream().anyMatch(student -> student.getEmail().equals(email))) {
+                    if (this.students.stream().anyMatch(student -> student.getEmail().equals(email))) {
                         System.out.println("This email is already taken.");
                     } else {
-                        students.add(new Student(name, lastName, email));
+                        Student student = new Student(name, lastName, email);
+                        this.students.add(student);
+                        this.certificatesIssued.put(student, new ArrayList<>());
                         addedStudents++;
                         System.out.println("The student has been added.");
                     }
@@ -105,7 +113,7 @@ public class LearningPlatform {
             System.out.println("No students found.");
         } else {
             System.out.println("Students:");
-            students.forEach(student -> System.out.println(student.getId()));
+            this.students.forEach(student -> System.out.println(student.getId()));
         }
     }
 
@@ -123,7 +131,7 @@ public class LearningPlatform {
                         .collect(Collectors.toList());
 
                 int id = pts.remove(0);
-                Optional<Student> s = students.stream()
+                Optional<Student> s = this.students.stream()
                         .filter(student -> student.getId() == id)
                         .findAny();
 
@@ -147,7 +155,7 @@ public class LearningPlatform {
 
             int id = Integer.parseInt(input);
 
-            Optional<Student> s = students.stream()
+            Optional<Student> s = this.students.stream()
                     .filter(student -> student.getId() == id)
                     .findAny();
 
@@ -242,6 +250,39 @@ public class LearningPlatform {
 
             input = scanner.nextLine();
         }
+    }
+
+    private void notifyStudents() {
+
+        int notifiedStudents = 0;
+
+        for (Student student : this.students) {
+
+            // Computa os certificados ainda não emitidos para o estudante
+            List<Courses> studentCertificates = this.certificatesIssued.get(student);
+            List<Courses> toNotify = student.getCompletedCourses().stream()
+                    .filter(course -> !studentCertificates.contains(course)).toList();
+
+            if (!toNotify.isEmpty()) {
+                notifiedStudents++;
+            }
+
+            toNotify.forEach(course -> {
+
+                System.out.printf("""
+                        To: %s
+                        Re: Your Learning Progress
+                        Hello, %s %s! You have accomplished our %s course!
+                        """, student.getEmail(), student.getName(),
+                        student.getLastName(), course.getCourseName());
+            });
+
+            // Atualiza a lista com os certificados emitidos
+            this.certificatesIssued.get(student).addAll(toNotify);
+
+        }
+
+        System.out.println("Total " + notifiedStudents + " students have been notified.");
     }
 
     private boolean validatePointsInput(String[] points) {

@@ -15,6 +15,7 @@ class Student {
     private final String email;
 
     private final Map<Courses, List<Integer>> activities;
+    private final List<Courses> completedCourses;
 
     public Student(String name, String surname, String email) {
 
@@ -41,6 +42,8 @@ class Student {
             this.activities.put(course, new ArrayList<>());
         }
 
+        this.completedCourses = new ArrayList<>();
+
     }
 
     public long getId() {
@@ -57,6 +60,10 @@ class Student {
 
     public String getEmail() {
         return email;
+    }
+
+    public List<Courses> getCompletedCourses() {
+        return new ArrayList<>(this.completedCourses);
     }
 
     public Map<Courses, List<Integer>> getActivities() {
@@ -89,6 +96,13 @@ class Student {
         if (points.get(3) > 0) {
             this.activities.get(Courses.SPRING).add(points.get(3));
         }
+
+        this.activities.forEach((course, pointsEarned) -> {
+            int totalPoints = pointsEarned.stream().mapToInt(Integer::intValue).sum();
+            if (totalPoints >= course.getPointsToCompletion()) {
+                this.completedCourses.add(course);
+            }
+        });
     }
 
     public String listUser() {
