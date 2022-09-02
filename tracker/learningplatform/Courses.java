@@ -3,7 +3,7 @@ package tracker.learningplatform;
 enum Courses {
 
     JAVA("Java", 600),
-    DSA("Data Structures and Algorithms", 400),
+    DSA("DSA", 400),
     DATABASES("Databases", 480),
     SPRING("Spring", 550);
 
@@ -13,6 +13,10 @@ enum Courses {
     Courses(String courseName, int pointsToCompletion) {
         this.courseName = courseName;
         this.pointsToCompletion = pointsToCompletion;
+    }
+
+    public String getCourseName() {
+        return courseName;
     }
 
     public int getPointsToCompletion() {

@@ -3,6 +3,7 @@ package tracker.learningplatform;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -15,10 +16,10 @@ public class LearningPlatform {
 
     private static LearningPlatform instance;
 
-    // private so I can hava a single instance
+    // private para ter uma unica instancia
     private LearningPlatform() {
-      students = new ArrayList<>();
-      scanner = new Scanner(System.in);
+        students = new ArrayList<>();
+        scanner = new Scanner(System.in);
     }
 
     public static LearningPlatform getInstance() {
@@ -49,6 +50,8 @@ public class LearningPlatform {
                 find();
             } else if (input.trim().equalsIgnoreCase("list")){
                 listStudents();
+            } else if (input.trim().equalsIgnoreCase("statistics")){
+                statistics();
             } else if (input.trim().equalsIgnoreCase("back")) {
                 System.out.println("Enter 'exit' to exit the program.");
             } else if ("".equals(input.trim())) {
@@ -158,6 +161,89 @@ public class LearningPlatform {
         }
     }
 
+    private void statistics() {
+
+        StatsHelper statsHelper = new StatsHelper(this.students);
+
+        List<Courses> mp = statsHelper.mostPopular();
+        List<Courses> lp = statsHelper.leastPopular();
+        mp.forEach(lp::remove); // se o curso está nos mais populares ele não pode estar nos menos populares
+
+        List<Courses> ha = statsHelper.highestActivity();
+        List<Courses> la = statsHelper.lowestActivity();
+        ha.forEach(la::remove); // se um curso está nos com maior atividade ele não pode estar nos com menor atividade
+
+        String mostPopular = this.students.isEmpty() ? "n/a"
+                : mp.stream().map(Courses::getCourseName).collect(Collectors.joining(", "));
+        String leastPopular = this.students.isEmpty() || lp.isEmpty() ? "n/a"
+                : lp.stream().map(Courses::getCourseName).collect(Collectors.joining(", "));
+        String highestActivity = this.students.isEmpty() ? "n/a"
+                : ha.stream().map(Courses::getCourseName).collect(Collectors.joining(", "));
+        String lowestActivity = this.students.isEmpty() || la.isEmpty() ? "n/a"
+                : la.stream().map(Courses::getCourseName).collect(Collectors.joining(", "));
+        String easiestCourse = this.students.isEmpty() ? "n/a"
+                : statsHelper.easiestCourse().stream().map(Courses::getCourseName)
+                .collect(Collectors.joining(", "));
+        String hardestCourse = this.students.isEmpty() ? "n/a"
+                : statsHelper.hardestCourse().stream().map(Courses::getCourseName)
+                .collect(Collectors.joining(", "));
+
+        System.out.printf(
+                """
+                        Type the name of a course to see details or 'back' to quit:
+                        Most popular: %s
+                        Least popular: %s
+                        Highest activity: %s
+                        Lowest activity: %s
+                        Easiest course: %s
+                        Hardest course: %s%n""",
+                mostPopular, leastPopular, highestActivity,
+                lowestActivity, easiestCourse, hardestCourse);
+
+        List<String> courseNames = Arrays.stream(Courses.values())
+                .map(course -> course.getCourseName().toLowerCase()).toList();
+
+        String input = scanner.nextLine();
+        while (!"back".equals(input.trim())) {
+
+            input = input.toLowerCase();
+            if (courseNames.contains(input)) {
+
+                String finalInput = input;
+                Courses course = Arrays.stream(Courses.values())
+                        .filter(c -> c.getCourseName().toLowerCase().equals(finalInput))
+                        .findAny().get();
+
+                List<Map.Entry<Student, Integer>> studentPerformance = statsHelper.studentPerfomanceByCourse(course)
+                        .entrySet().stream()
+                        .sorted((entry0, entry1) -> entry1.getValue() - entry0.getValue()) // tem que ser ordenado
+                        .toList();                                                         // pelos pontos
+
+                System.out.printf("""
+                        %s
+                        id\tpoints\tcompleted
+                        """, course.getCourseName());
+
+                studentPerformance.forEach(entry -> {
+
+                    Student student = entry.getKey();
+                    int points = entry.getValue();
+                    double percentage = (double) points / (double) course.getPointsToCompletion();
+                    percentage = percentage * 100;
+
+                    String s = String.format("%.1f", percentage) + "%";
+                    System.out.printf("%d\t%d\t%s\n", student.getId(), points, s);
+
+                });
+
+            } else {
+                System.out.println("Unknown course.");
+            }
+
+            input = scanner.nextLine();
+        }
+    }
+
     private boolean validatePointsInput(String[] points) {
 
         if (points.length != 5) {
@@ -199,7 +285,8 @@ public class LearningPlatform {
         }
 
         List<String> lastNames = Arrays.asList(lastName.split("\\s+"));
-        boolean isValidLastName = lastNames.stream().allMatch(lName -> lName.matches("^[a-zA-Z]+((['-]{0,1}[a-zA-Z])|[a-zA-Z])+"));
+        boolean isValidLastName = lastNames.stream()
+                .allMatch(lName -> lName.matches("^[a-zA-Z]+((['-]{0,1}[a-zA-Z])|[a-zA-Z])+"));
         if (!isValidLastName) {
             System.out.println("Incorrect last name.");
             return false;

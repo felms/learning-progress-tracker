@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class StatsHelper {
@@ -58,10 +59,16 @@ class StatsHelper {
         return this.hCourse;
     }
 
-    public String courseDetails(Courses course) {
+    public Map<Student, Integer> studentPerfomanceByCourse(Courses course) {
 
-        // TODO
-        return null;
+        return this.students.stream()
+                .filter(student -> student.getActivities().get(course).size() > 0)
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        student -> student.getActivities().get(course).stream()
+                                .mapToInt(Integer::intValue)
+                                .sum()
+                ));
     }
 
     private void measureCoursesPopularity() {
@@ -106,9 +113,10 @@ class StatsHelper {
         Map<Courses, Integer> activitiesByCourse = new HashMap<>();
 
         Arrays.stream(Courses.values()).forEach(course -> {
-            int numberOfActivities = (int) this.students.stream()
+            int numberOfActivities = this.students.stream()
                     .map(student -> student.getActivities().get(course).size())
-                    .count();
+                    .mapToInt(Integer::intValue)
+                    .sum();
 
             activitiesByCourse.put(course, numberOfActivities);
         });

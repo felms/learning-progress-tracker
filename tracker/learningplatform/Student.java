@@ -69,7 +69,7 @@ class Student {
                             coursesListEntry.getValue().forEach(i -> newValue.add(i.intValue()));
                             return newValue;
                         }
-                        ));
+                ));
     }
 
     public void updateRecord(List<Integer> points) {
